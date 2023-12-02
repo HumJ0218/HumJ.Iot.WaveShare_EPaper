@@ -1,7 +1,5 @@
 ﻿using System.Device.Gpio;
 using System.Device.Spi;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
 
 namespace HumJ.Iot.WaveShare_EPaper
 {
