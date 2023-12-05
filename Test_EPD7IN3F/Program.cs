@@ -15,13 +15,13 @@ try
     Console.WriteLine("init and Clear");
     var epd = new Epd7in3f(gpio, spi);
 
-    epd.ColorMap.Add(0x2A282B, Epd7in3fColor.Black);
-    epd.ColorMap.Add(0xBDBDBD, Epd7in3fColor.White);
-    epd.ColorMap.Add(0xbbb926, Epd7in3fColor.Yellow);
-    epd.ColorMap.Add(0x9f5d31, Epd7in3fColor.Orange);
-    epd.ColorMap.Add(0x527d21, Epd7in3fColor.Green);
-    epd.ColorMap.Add(0x733b3a, Epd7in3fColor.Red);
-    epd.ColorMap.Add(0x344269, Epd7in3fColor.Blue);
+    Epd7in3fImage.ColorMap.Add(0x2A282B, Epd7in3fColor.Black);
+    Epd7in3fImage.ColorMap.Add(0xBDBDBD, Epd7in3fColor.White);
+    Epd7in3fImage.ColorMap.Add(0xbbb926, Epd7in3fColor.Yellow);
+    Epd7in3fImage.ColorMap.Add(0x9f5d31, Epd7in3fColor.Orange);
+    Epd7in3fImage.ColorMap.Add(0x527d21, Epd7in3fColor.Green);
+    Epd7in3fImage.ColorMap.Add(0x733b3a, Epd7in3fColor.Red);
+    Epd7in3fImage.ColorMap.Add(0x344269, Epd7in3fColor.Blue);
 
     epd.Initialize();
     //epd.Clear();
@@ -32,7 +32,7 @@ try
         while (running)
         {
             var files = new DirectoryInfo("./image").GetFiles("*.png");
-            if (files.Any())
+            if (files.Length != 0)
             {
                 var fi = files[new Random().Next(files.Length)];
                 try

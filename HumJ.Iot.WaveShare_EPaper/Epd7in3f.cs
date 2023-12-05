@@ -1,5 +1,6 @@
 ﻿using System.Device.Gpio;
 using System.Device.Spi;
+using System.Net.Sockets;
 
 namespace HumJ.Iot.WaveShare_EPaper
 {
@@ -16,16 +17,6 @@ namespace HumJ.Iot.WaveShare_EPaper
             ChipSelectLineActiveState = 0,
         };
 
-        public IDictionary<int, Epd7in3fColor> ColorMap { get; } = new Dictionary<int, Epd7in3fColor>
-        {
-            [0x000000] = Epd7in3fColor.Black,
-            [0xFFFFFF] = Epd7in3fColor.White,
-            [0x00FF00] = Epd7in3fColor.Green,
-            [0x0000FF] = Epd7in3fColor.Blue,
-            [0xFF0000] = Epd7in3fColor.Red,
-            [0xFFFF00] = Epd7in3fColor.Yellow,
-            [0xFF8000] = Epd7in3fColor.Orange,
-        };
         public int BytesPerPacket { get; set; }
 
         private readonly GpioController gpio;
@@ -36,7 +27,7 @@ namespace HumJ.Iot.WaveShare_EPaper
         private readonly int reset;
         private readonly int pwr;
 
-        private object locker = new();
+        internal object locker = new();
 
         public Epd7in3f(GpioController gpio, SpiDevice spi, int dc = 25, int busy = 24, int reset = 17, int pwr = 18, int bytesPerPacket = 4096)
         {
@@ -140,32 +131,6 @@ namespace HumJ.Iot.WaveShare_EPaper
             }
         }
 
-        public void ShowImage(Image<Rgb24> image)
-        {
-            var buffer = new byte[HEIGHT * WIDTH / 2];
-
-            for (var i = 0; i < buffer.Length; i++)
-            {
-                var pixelIndex = i * 2;
-                var x = pixelIndex % WIDTH;
-                var y = pixelIndex / WIDTH;
-
-                var dataH = GetPixelColorByte(image[x, y]);
-                var dataL = GetPixelColorByte(image[x + 1, y]);
-
-                var data = (dataH << 4) + dataL;
-                buffer[i] = (byte)data;
-            }
-
-            lock (locker)
-            {
-                SendCommand(0x10);
-                SendData(buffer);
-
-                Flush();
-            }
-        }
-
         public void Sleep()
         {
             lock (locker)
@@ -195,21 +160,21 @@ namespace HumJ.Iot.WaveShare_EPaper
             GC.SuppressFinalize(this);
         }
 
-        private void SendCommand(byte command)
+        internal void SendCommand(byte command)
         {
             gpio.Write(dc, 0);
             spi.WriteByte(command);
         }
 
-        private void SendData(byte value)
+        internal void SendData(byte value)
         {
             gpio.Write(dc, 1);
             spi.WriteByte(value);
         }
 
-        private void SendData(params byte[] buffer) => SendData(buffer.AsSpan());
+        internal void SendData(params byte[] buffer) => SendData(buffer.AsSpan());
 
-        private void SendData(ReadOnlySpan<byte> buffer)
+        internal void SendData(ReadOnlySpan<byte> buffer)
         {
             gpio.Write(dc, 1);
 
@@ -224,7 +189,7 @@ namespace HumJ.Iot.WaveShare_EPaper
             }
         }
 
-        private void Reset()
+        internal void Reset()
         {
             lock (locker)
             {
@@ -237,7 +202,7 @@ namespace HumJ.Iot.WaveShare_EPaper
             }
         }
 
-        private void Flush()
+        internal void Flush()
         {
             SendCommand(0x04); // POWER_ON
             WaitForIdle();
@@ -251,24 +216,12 @@ namespace HumJ.Iot.WaveShare_EPaper
             WaitForIdle();
         }
 
-        private void WaitForIdle()
+        internal void WaitForIdle()
         {
             while (gpio.Read(busy) == 0) // 0: busy, 1: idle
             {
                 Thread.Sleep(5);
             }
-        }
-
-        private byte GetPixelColorByte(Rgb24 rgb24)
-        {
-            var r = rgb24.R;
-            var g = rgb24.G;
-            var b = rgb24.B;
-
-            var rgb = (r << 16) + (g << 8) + b;
-            var color = ColorMap[rgb];
-
-            return (byte)color;
         }
     }
 }
