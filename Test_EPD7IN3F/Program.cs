@@ -15,13 +15,13 @@ try
     Console.WriteLine("init and Clear");
     var epd = new Epd7in3f(gpio, spi);
 
-    epd.ColorMap.Add(0x2A282B, Epd7in3fColor.Black);
-    epd.ColorMap.Add(0xBDBDBD, Epd7in3fColor.White);
-    epd.ColorMap.Add(0xbbb926, Epd7in3fColor.Yellow);
-    epd.ColorMap.Add(0x9f5d31, Epd7in3fColor.Orange);
-    epd.ColorMap.Add(0x527d21, Epd7in3fColor.Green);
-    epd.ColorMap.Add(0x733b3a, Epd7in3fColor.Red);
-    epd.ColorMap.Add(0x344269, Epd7in3fColor.Blue);
+    epd.ColorMap[Color.Parse("#2A282B")]= Epd7in3fColor.Black;
+    epd.ColorMap[Color.Parse("#BDBDBD")]= Epd7in3fColor.White;
+    epd.ColorMap[Color.Parse("#bbb926")]= Epd7in3fColor.Yellow;
+    epd.ColorMap[Color.Parse("#9f5d31")]= Epd7in3fColor.Orange;
+    epd.ColorMap[Color.Parse("#527d21")]= Epd7in3fColor.Green;
+    epd.ColorMap[Color.Parse("#733b3a")]= Epd7in3fColor.Red;
+    epd.ColorMap[Color.Parse("#344269")]= Epd7in3fColor.Blue;
 
     epd.Initialize();
     //epd.Clear();
@@ -31,13 +31,13 @@ try
     {
         while (running)
         {
-            var files = new DirectoryInfo("./image").GetFiles("*.png");
+            var files = new DirectoryInfo("./image").GetFiles("*.png").Concat(new DirectoryInfo("./image").GetFiles("*.jpg")).ToArray();
             if (files.Any())
             {
                 var fi = files[new Random().Next(files.Length)];
                 try
                 {
-                    var image = Image.Load<Rgb24>(fi.FullName);
+                    var image = Image.Load(fi.FullName);
                     if (image.Width >= Epd7in3f.WIDTH && image.Height >= Epd7in3f.HEIGHT)
                     {
                         Console.WriteLine("ShowImage " + fi);

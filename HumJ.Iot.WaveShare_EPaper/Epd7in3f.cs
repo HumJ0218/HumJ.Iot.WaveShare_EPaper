@@ -1,7 +1,5 @@
 ﻿using System.Device.Gpio;
 using System.Device.Spi;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
 
 namespace HumJ.Iot.WaveShare_EPaper
 {
@@ -18,17 +16,17 @@ namespace HumJ.Iot.WaveShare_EPaper
             ChipSelectLineActiveState = 0,
         };
 
-        public IDictionary<int, Epd7in3fColor> ColorMap { get; } = new Dictionary<int, Epd7in3fColor>
+        public IDictionary<Color, Epd7in3fColor> ColorMap { get; } = new Dictionary<Color, Epd7in3fColor>
         {
-            [0x000000] = Epd7in3fColor.Black,
-            [0xFFFFFF] = Epd7in3fColor.White,
-            [0x00FF00] = Epd7in3fColor.Green,
-            [0x0000FF] = Epd7in3fColor.Blue,
-            [0xFF0000] = Epd7in3fColor.Red,
-            [0xFFFF00] = Epd7in3fColor.Yellow,
-            [0xFF8000] = Epd7in3fColor.Orange,
+            [Color.Black] = Epd7in3fColor.Black,
+            [Color.White] = Epd7in3fColor.White,
+            [Color.Red] = Epd7in3fColor.Green,
+            [Color.Blue] = Epd7in3fColor.Blue,
+            [Color.Red] = Epd7in3fColor.Red,
+            [Color.Yellow] = Epd7in3fColor.Yellow,
+            [Color.Orange] = Epd7in3fColor.Orange,
         };
-        public int BytesPerPacket { get; set; }
+        public int BytesPerPacket { get; set; } = 4096;
 
         private readonly GpioController gpio;
         private readonly SpiDevice spi;
@@ -40,7 +38,7 @@ namespace HumJ.Iot.WaveShare_EPaper
 
         private object locker = new();
 
-        public Epd7in3f(GpioController gpio, SpiDevice spi, int dc = 25, int busy = 24, int reset = 17, int pwr = 18, int bytesPerPacket = 4096)
+        public Epd7in3f(GpioController gpio, SpiDevice spi, int dc = 25, int busy = 24, int reset = 17, int pwr = 18)
         {
             this.gpio = gpio ?? throw new ArgumentNullException(nameof(gpio));
             this.spi = spi ?? throw new ArgumentNullException(nameof(spi));
@@ -48,8 +46,6 @@ namespace HumJ.Iot.WaveShare_EPaper
             this.busy = busy;
             this.reset = reset;
             this.pwr = pwr;
-
-            BytesPerPacket = bytesPerPacket;
 
             lock (locker)
             {
@@ -142,21 +138,24 @@ namespace HumJ.Iot.WaveShare_EPaper
             }
         }
 
-        public void ShowImage(Image<Rgb24> image)
+        public void ShowImage(Image image)
         {
             var buffer = new byte[HEIGHT * WIDTH / 2];
 
-            for (var i = 0; i < buffer.Length; i++)
+            using (var image2 = image.CloneAs<Rgb24>())
             {
-                var pixelIndex = i * 2;
-                var x = pixelIndex % WIDTH;
-                var y = pixelIndex / WIDTH;
+                Parallel.For(0, buffer.Length, i =>
+                {
+                    var pixelIndex = i * 2;
+                    var x = pixelIndex % WIDTH;
+                    var y = pixelIndex / WIDTH;
 
-                var dataH = GetPixelColorByte(image[x, y]);
-                var dataL = GetPixelColorByte(image[x + 1, y]);
+                    var dataH = GetPixelColorByte(image2[x, y]);
+                    var dataL = GetPixelColorByte(image2[x + 1, y]);
 
-                var data = (dataH << 4) + dataL;
-                buffer[i] = (byte)data;
+                    var data = (dataH << 4) + dataL;
+                    buffer[i] = (byte)data;
+                });
             }
 
             lock (locker)
@@ -257,20 +256,16 @@ namespace HumJ.Iot.WaveShare_EPaper
         {
             while (gpio.Read(busy) == 0) // 0: busy, 1: idle
             {
-                Thread.Sleep(5);
+                Thread.Sleep(1);
             }
         }
 
-        private byte GetPixelColorByte(Rgb24 rgb24)
+        private byte GetPixelColorByte<TPixel>(TPixel pixel) where TPixel : unmanaged, IPixel<TPixel>
         {
-            var r = rgb24.R;
-            var g = rgb24.G;
-            var b = rgb24.B;
+            var pixelColor = Color.FromPixel(pixel);
+            var dataColor = ColorMap[pixelColor];
 
-            var rgb = (r << 16) + (g << 8) + b;
-            var color = ColorMap[rgb];
-
-            return (byte)color;
+            return (byte)dataColor;
         }
     }
 }
