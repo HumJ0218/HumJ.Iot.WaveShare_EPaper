@@ -252,7 +252,7 @@ namespace HumJ.Iot.WaveShare_EPaper
             WaitForIdle();
         }
 
-        private void WaitForIdle()
+        internal void WaitForIdle()
         {
             while (gpio.Read(busy) == 0) // 0: busy, 1: idle
             {
