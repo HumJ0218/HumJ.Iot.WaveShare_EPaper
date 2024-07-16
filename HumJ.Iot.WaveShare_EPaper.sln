@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HumJ.Iot.WaveShare_EPaper", "HumJ.Iot.WaveShare_EPaper\HumJ.Iot.WaveShare_EPaper.csproj", "{D08D1851-B539-4C66-B167-1B61BBDBC5A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HumJ.Iot.WaveShare_EPaper", "HumJ.Iot.WaveShare_EPaper\HumJ.Iot.WaveShare_EPaper.csproj", "{D08D1851-B539-4C66-B167-1B61BBDBC5A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test_EPD7IN3F", "Test_EPD7IN3F\Test_EPD7IN3F.csproj", "{66452866-228C-4200-A0AE-C4190D2DFC02}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{1AE5A1D7-0A77-43C9-9F72-47CFA5D049FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{D08D1851-B539-4C66-B167-1B61BBDBC5A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D08D1851-B539-4C66-B167-1B61BBDBC5A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D08D1851-B539-4C66-B167-1B61BBDBC5A1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{66452866-228C-4200-A0AE-C4190D2DFC02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{66452866-228C-4200-A0AE-C4190D2DFC02}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{66452866-228C-4200-A0AE-C4190D2DFC02}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{66452866-228C-4200-A0AE-C4190D2DFC02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AE5A1D7-0A77-43C9-9F72-47CFA5D049FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AE5A1D7-0A77-43C9-9F72-47CFA5D049FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AE5A1D7-0A77-43C9-9F72-47CFA5D049FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AE5A1D7-0A77-43C9-9F72-47CFA5D049FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
