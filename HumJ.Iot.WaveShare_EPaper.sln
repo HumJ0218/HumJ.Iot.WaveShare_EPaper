@@ -5,7 +5,12 @@ VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HumJ.Iot.WaveShare_EPaper", "HumJ.Iot.WaveShare_EPaper\HumJ.Iot.WaveShare_EPaper.csproj", "{D08D1851-B539-4C66-B167-1B61BBDBC5A1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{1AE5A1D7-0A77-43C9-9F72-47CFA5D049FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{1AE5A1D7-0A77-43C9-9F72-47CFA5D049FE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决方案项", "{2864F74B-78D7-4FA2-ABAF-C25393FF3687}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
