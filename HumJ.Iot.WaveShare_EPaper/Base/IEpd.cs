@@ -2,7 +2,7 @@
 
 namespace HumJ.Iot.WaveShare_EPaper.Base
 {
-    public interface IEPaper : IDisposable
+    public interface IEpd : IDisposable
     {
         int Width { get; }
         int Height { get; }

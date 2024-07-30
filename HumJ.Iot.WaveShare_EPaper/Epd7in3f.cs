@@ -4,7 +4,7 @@ using System.Device.Spi;
 
 namespace HumJ.Iot.WaveShare_EPaper
 {
-    public class Epd7in3f : Epd7InchMultipleColor
+    public class Epd7in3f : Epd7in3
     {
         public static SpiConnectionSettings SpiConnectionSettings => new(0, 0)
         {

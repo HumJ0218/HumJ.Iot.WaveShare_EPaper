@@ -18,7 +18,7 @@ var brushWhite = new SolidBrush(Color.White);
 
 using var spi = SpiDevice.Create(Epd7in3e.SpiConnectionSettings);
 using var gpio = new GpioController();
-using Epd7InchMultipleColor epd = args.Contains("-f") ? new Epd7in3f(spi, gpio, dc: 25, reset: 24, busy: 23) : new Epd7in3e(spi, gpio, dc: 25, reset: 24, busy: 23);
+using Epd7in3 epd = args.Contains("-f") ? new Epd7in3f(spi, gpio, dc: 25, reset: 24, busy: 23) : new Epd7in3e(spi, gpio, dc: 25, reset: 24, busy: 23);
 
 if (args.Contains("-t"))
 {
