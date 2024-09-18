@@ -8,7 +8,7 @@
 
 # 已支持的屏幕型号
 
-## 7.3英寸，800*480分辨率，Spectra6 6色（实际为7色）
+## 7.3英寸，800*480分辨率，E6 6色（实际为7色）
 
 [EPD7IN3E](https://www.waveshare.net/shop/7.3inch-e-Paper-E.htm)（未实测）
 
