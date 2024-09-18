@@ -14,7 +14,7 @@
 
 [GDEP073E01](https://www.good-display.cn/blank7.html?productId=520)
 
-## 7.3英寸，800*480分辨率，AcCeP 7色
+## 7.3英寸，800*480分辨率，ACeP 7色
 
 [EPD7IN3F](https://www.waveshare.net/shop/7.3inch-e-Paper-F.htm)
 
