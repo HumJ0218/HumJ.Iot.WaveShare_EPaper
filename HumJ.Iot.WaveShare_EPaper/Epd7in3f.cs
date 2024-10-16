@@ -15,10 +15,6 @@ namespace HumJ.Iot.WaveShare_EPaper
             ChipSelectLineActiveState = 0,
         };
 
-        public override int Width => 800;
-
-        public override int Height => 480;
-
         public Epd7in3f(SpiDevice spi, GpioController gpio, int dc, int reset, int busy) : base(spi, gpio, dc, reset, busy)
         {
             PaletteCommand[0x000000] = 0; // black

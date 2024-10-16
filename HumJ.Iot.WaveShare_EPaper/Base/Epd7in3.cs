@@ -142,7 +142,7 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
             Flush();
         }
 
-        public void DisplayPartial(Image image, Rectangle rectangle)
+        public void DisplayPartial(Image image, Rectangle destination)
         {
             throw new NotSupportedException();
         }
@@ -169,26 +169,31 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
 
         private void LoadImageData(Image image)
         {
-
-            using Image<Rgb24> imageCopy = image.CloneAs<Rgb24>();
-
-            Rgb24 pixel;
-            byte data_H, data_L, data;
-            int index = 0;
-
-            for (var y = 0; y < Height; y++)
+            if (image is Image<Rgb24> source)
             {
-                for (var x = 0; x < Width; x += 2)
+                Rgb24 pixel;
+                byte data_H, data_L, data;
+                int index = 0;
+
+                for (var y = 0; y < Height; y++)
                 {
-                    pixel = imageCopy[x, y];
-                    data_H = PaletteCommand[pixel.R << 16 | pixel.G << 8 | pixel.B];
+                    for (var x = 0; x < Width; x += 2)
+                    {
+                        pixel = source[x, y];
+                        data_H = PaletteCommand[pixel.R << 16 | pixel.G << 8 | pixel.B];
 
-                    pixel = imageCopy[x + 1, y];
-                    data_L = PaletteCommand[pixel.R << 16 | pixel.G << 8 | pixel.B];
+                        pixel = source[x + 1, y];
+                        data_L = PaletteCommand[pixel.R << 16 | pixel.G << 8 | pixel.B];
 
-                    data = (byte)((data_H << 4) | data_L);
-                    buffer[index++] = data;
+                        data = (byte)((data_H << 4) | data_L);
+                        buffer[index++] = data;
+                    }
                 }
+            }
+            else
+            {
+                using var clone = image.CloneAs<Rgb24>();
+                LoadImageData(clone);
             }
         }
 

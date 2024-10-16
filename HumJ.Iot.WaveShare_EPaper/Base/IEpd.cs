@@ -14,6 +14,6 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
 
         void Clear(Color color);
         void Display(Image image);
-        void DisplayPartial(Image image, Rectangle rectangle);
+        void DisplayPartial(Image image, Rectangle destination);
     }
 }
