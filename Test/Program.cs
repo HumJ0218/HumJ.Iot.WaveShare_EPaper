@@ -3,10 +3,12 @@ using HumJ.Iot.WaveShare_EPaper.Base;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Dithering;
 using System.Device.Gpio;
 using System.Device.Spi;
+using System.Security.Cryptography;
 
 var fonts = new FontCollection();
 fonts.AddSystemFonts();
@@ -20,21 +22,38 @@ using var spi = SpiDevice.Create(Epd7in3e.SpiConnectionSettings);
 using var gpio = new GpioController();
 using Epd7in3 epd = args.Contains("-f") ? new Epd7in3f(spi, gpio, dc: 25, reset: 24, busy: 23) : new Epd7in3e(spi, gpio, dc: 25, reset: 24, busy: 23);
 
+var lastRotate = false;
+
 if (args.Contains("-t"))
 {
     ShowTest();
 }
 else if (args.Contains("-u"))
 {
+    var lastInput = "https://t.alcy.cc/mp/";
+
     while (true)
     {
         try
         {
             Console.Title = ("Download");
-            var bytes = new HttpClient().GetByteArrayAsync(Console.ReadLine()).Result;
+            var newInput = Console.ReadLine()!;
+
+            newInput = string.IsNullOrWhiteSpace(newInput) ? lastInput : newInput;
+            var bytes = new HttpClient().GetByteArrayAsync(newInput).Result;
 
             Console.Title = ("Load");
             var image = Image.Load(bytes);
+
+            {
+                Console.Title = ("SaveImage");
+                var md5 = MD5.HashData(bytes);
+                var file = new FileInfo($"./shown/{BitConverter.ToString(md5).Replace("-", "")}.jpg");
+                var format = new JpegEncoder { Quality = 100 };
+
+                file.Directory!.Create();
+                image.Save(file.FullName);
+            }
 
             Console.Title = ("ShowImage");
             ShowImage(image);
@@ -93,10 +112,26 @@ void ShowTest()
 
 void ShowImage(Image image)
 {
+    var rotate = false;
+
     if (image.Width < image.Height)
     {
+        rotate = true;
+    }
+    else if (image.Width > image.Height)
+    {
+        rotate = false;
+    }
+    else
+    {
+        rotate = lastRotate;
+    }
+
+    lastRotate = rotate;
+    if (rotate)
+    {
         Console.Title = ("Rotate");
-        image.Mutate(x => x.Rotate(RotateMode.Rotate90));
+        image.Mutate(x => x.Rotate(RotateMode.Rotate270));
     }
 
     //Console.Title = ("Contrast");
