@@ -142,7 +142,7 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
             Flush();
         }
 
-        public void DisplayPartial(Image image, Rectangle destination)
+        public void DisplayPartial(Image image, int x, int y)
         {
             throw new NotSupportedException();
         }
