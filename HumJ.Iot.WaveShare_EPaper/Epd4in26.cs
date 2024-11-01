@@ -33,7 +33,7 @@ namespace HumJ.Iot.WaveShare_EPaper
         private readonly int reset;
         private readonly int busy;
 
-        public Epd4in26(SpiDevice spi, GpioController gpio, int dc = 25, int reset = 24, int busy = 23)
+        public Epd4in26(SpiDevice spi, GpioController gpio, int dc, int reset, int busy)
         {
             this.spi = spi;
             this.gpio = gpio;
@@ -76,7 +76,7 @@ namespace HumJ.Iot.WaveShare_EPaper
             SendCommand(0x26);
             SendData(buffer);
 
-            TurnOnDisplay();
+            Flush();
         }
 
         public void Display(Image image)
@@ -105,7 +105,7 @@ namespace HumJ.Iot.WaveShare_EPaper
                 switch (Mode)
                 {
                     case DisplayMode.Normal:
-                    case DisplayMode.Fast: DisplayPartial(GetBuffer(imageRgb24), x, y, image.Width, image.Height); break;
+                    case DisplayMode.Fast: Display(GetBuffer(imageRgb24), x, y, image.Width, image.Height); break;
                     default: throw new NotSupportedException();
                 }
             }
@@ -136,7 +136,137 @@ namespace HumJ.Iot.WaveShare_EPaper
             GC.SuppressFinalize(this);
         }
 
-        #region
+        #region Normal
+        private void Init()
+        {
+            // EPD hardware init start
+            Reset();
+            WaitForIdle();
+
+            SendCommand(0x12); //SWRESET
+            WaitForIdle();
+
+            SendCommand(0x18); // use the internal temperature sensor
+            SendData(0x80);
+
+            SendCommand(0x0C); //set soft start     
+            SendData(0xAE, 0xC7, 0xC3, 0xC0, 0x80);
+
+            SendCommand(0x01);   //      drive output control    
+            SendData((byte)((Height - 1) % 256), (byte)((Height - 1) / 256)); //  Y 
+
+            SendData(0x02);
+
+            SendCommand(0x3C);        // Border       Border setting 
+            SendData(0x01);
+
+            SendCommand(0x11);       //    data  entry  mode
+            SendData(0x01);          //       X-mode  x+ y-    
+
+            SetWindow(0, Height - 1, Width - 1, 0);
+
+            SetCursor(0, 0);
+            WaitForIdle();
+
+            partialMode = false;
+        }
+
+        private void Display(byte[] buffer)
+        {
+            if (partialMode)
+            {
+                Init();
+            }
+
+            SendCommand(0x24);
+            SendData(buffer);
+
+            SendCommand(0x26);
+            SendData(buffer);
+
+            Flush();
+        }
+
+        private void Flush()
+        {
+            SendCommand(0x22); // Display Update Control
+            SendData(0xF7);
+            SendCommand(0x20); // Activate Display Update Sequence
+            WaitForIdle();
+        }
+        #endregion
+
+        #region Fast
+        private void InitFast()
+        {
+            // EPD hardware init start
+            Reset();
+            WaitForIdle();
+
+            SendCommand(0x12); //SWRESET
+            WaitForIdle();
+
+
+            SendCommand(0x18); // use the internal temperature sensor
+            SendData(0x80);
+
+            SendCommand(0x0C); //set soft start     
+            SendData(0xAE, 0xC7, 0xC3, 0xC0, 0x80);
+
+            SendCommand(0x01);   //      drive output control    
+            SendData((byte)((Height - 1) % 256), (byte)((Height - 1) / 256)); //  Y 
+            SendData(0x02);
+
+            SendCommand(0x3C);        // Border       Border setting 
+            SendData(0x01);
+
+            SendCommand(0x11);        //    data  entry  mode
+            SendData(0x01);           //       X-mode  x+ y-    
+
+            SetWindow(0, Height - 1, Width - 1, 0);
+
+            SetCursor(0, 0);
+            WaitForIdle();
+
+            // TEMP (1.5s)
+            SendCommand(0x1A);
+            SendData(0x5A);
+
+            SendCommand(0x22);
+            SendData(0x91);
+            SendCommand(0x20);
+
+            WaitForIdle();
+
+            partialMode = false;
+        }
+
+        private void DisplayFast(byte[] image)
+        {
+            if (partialMode)
+            {
+                InitFast();
+            }
+
+            SendCommand(0x24);
+            SendData(image);
+
+            SendCommand(0x26);
+            SendData(image);
+
+            FlushFast();
+        }
+
+        private void FlushFast()
+        {
+            SendCommand(0x22); // Display Update Control
+            SendData(0xC7);
+            SendCommand(0x20); // Activate Display Update Sequence
+            WaitForIdle();
+        }
+        #endregion
+
+        #region Gray4
         private static readonly byte[] LUT_DATA_4Gray = // 112bytes
         [
             0x80, 0x48, 0x4A, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -159,187 +289,14 @@ namespace HumJ.Iot.WaveShare_EPaper
             0x00, 0x00,
         ];
 
-        private void SendCommand(byte command)
-        {
-            gpio.Write(dc, 0);
-            spi.WriteByte(command);
-        }
-
-        private void SendData(params byte[] data)
-        {
-            gpio.Write(dc, 1);
-            spi.Write(data);
-        }
-
-        private void SendData(Span<byte> data)
-        {
-            gpio.Write(dc, 1);
-            spi.Write(data);
-        }
-
-        private void ReadBusy()
-        {
-            Console.WriteLine("e-Paper busy");
-            while (gpio.Read(busy) != 0) { }
-            Console.WriteLine("e-Paper busy release");
-        }
-
-        private void TurnOnDisplay()
-        {
-            SendCommand(0x22); // Display Update Control
-            SendData(0xF7);
-            SendCommand(0x20); // Activate Display Update Sequence
-            ReadBusy();
-        }
-
-        private void TurnOnDisplay_Fast()
-        {
-            SendCommand(0x22); // Display Update Control
-            SendData(0xC7);
-            SendCommand(0x20); // Activate Display Update Sequence
-            ReadBusy();
-        }
-
-        private void TurnOnDisplay_Part()
-        {
-            SendCommand(0x22); // Display Update Control
-            SendData(0xFF);
-
-            SendCommand(0x20); //  Activate Display Update Sequence
-            ReadBusy();
-        }
-
-        private void TurnOnDisplay_4GRAY()
-        {
-            SendCommand(0x22); // Display Update Control
-            SendData(0xC7);
-            SendCommand(0x20); //  Activate Display Update Sequence
-            ReadBusy();
-        }
-
-        private void SetWindow(int x_start, int y_start, int x_end, int y_end)
-        {
-            Console.WriteLine($"SetWindow: {x_start},{y_start} - {x_end},{y_end}");
-
-            SendCommand(0x44); // SET_RAM_X_ADDRESS_START_END_POSITION
-            SendData((byte)(x_start & 0xFF), (byte)((x_start >> 8) & 0x03), (byte)(x_end & 0xFF), (byte)((x_end >> 8) & 0x03));
-
-
-            SendCommand(0x45); // SET_RAM_Y_ADDRESS_START_END_POSITION
-            SendData((byte)(y_start & 0xFF), (byte)((y_start >> 8) & 0x03), (byte)(y_end & 0xFF), (byte)((y_end >> 8) & 0x03));
-        }
-
-        private void SetCursor(int x, int y)
-        {
-            Console.WriteLine($"SetCursor: {x},{y}");
-
-            SendCommand(0x4E); // SET_RAM_X_ADDRESS_COUNTER
-                               // x point must be the multiple of 8 or the last 3 bits will be ignored
-            SendData((byte)(x & 0xFF), (byte)((x >> 8) & 0x03));
-
-            SendCommand(0x4F); // SET_RAM_Y_ADDRESS_COUNTER
-            SendData((byte)(y & 0xFF), (byte)((y >> 8) & 0xFF));
-        }
-
-        private void Init()
-        {
-            // EPD hardware init start
-            Reset();
-            ReadBusy();
-
-            SendCommand(0x12); //SWRESET
-            ReadBusy();
-
-            SendCommand(0x18); // use the internal temperature sensor
-            SendData(0x80);
-
-            SendCommand(0x0C); //set soft start     
-            SendData(0xAE, 0xC7, 0xC3, 0xC0, 0x80);
-
-            SendCommand(0x01);   //      drive output control    
-            SendData((byte)((Height - 1) % 256), (byte)((Height - 1) / 256)); //  Y 
-
-            SendData(0x02);
-
-            SendCommand(0x3C);        // Border       Border setting 
-            SendData(0x01);
-
-            SendCommand(0x11);       //    data  entry  mode
-            SendData(0x01);          //       X-mode  x+ y-    
-
-            SetWindow(0, Height - 1, Width - 1, 0);
-
-            SetCursor(0, 0);
-            ReadBusy();
-        }
-
-        private void InitFast()
-        {
-            // EPD hardware init start
-            Reset();
-            ReadBusy();
-
-            SendCommand(0x12); //SWRESET
-            ReadBusy();
-
-
-            SendCommand(0x18); // use the internal temperature sensor
-            SendData(0x80);
-
-            SendCommand(0x0C); //set soft start     
-            SendData(0xAE, 0xC7, 0xC3, 0xC0, 0x80);
-
-            SendCommand(0x01);   //      drive output control    
-            SendData((byte)((Height - 1) % 256), (byte)((Height - 1) / 256)); //  Y 
-            SendData(0x02);
-
-            SendCommand(0x3C);        // Border       Border setting 
-            SendData(0x01);
-
-            SendCommand(0x11);        //    data  entry  mode
-            SendData(0x01);           //       X-mode  x+ y-    
-
-            SetWindow(0, Height - 1, Width - 1, 0);
-
-            SetCursor(0, 0);
-            ReadBusy();
-
-            // TEMP (1.5s)
-            SendCommand(0x1A);
-            SendData(0x5A);
-
-            SendCommand(0x22);
-            SendData(0x91);
-            SendCommand(0x20);
-
-            ReadBusy();
-        }
-
-        private void Lut()
-        {
-            SendCommand(0x32);
-            SendData(LUT_DATA_4Gray.AsSpan(0, 105));
-
-
-            SendCommand(0x03); //VGH
-            SendData(LUT_DATA_4Gray[105]);
-
-            SendCommand(0x04); //
-            SendData(LUT_DATA_4Gray[106], LUT_DATA_4Gray[107], LUT_DATA_4Gray[108]); // VSH1 VSH2 VSL
-
-            SendCommand(0x2C); //VCOM Voltage
-            SendData(LUT_DATA_4Gray[109]); // 0x1C
-        }
-
         private void InitGray4()
         {
             // EPD hardware init start
             Reset();
-            ReadBusy();
+            WaitForIdle();
 
             SendCommand(0x12); //SWRESET
-            ReadBusy();
-
+            WaitForIdle();
 
             SendCommand(0x18); // use the internal temperature sensor
             SendData(0x80);
@@ -364,9 +321,159 @@ namespace HumJ.Iot.WaveShare_EPaper
             SetWindow(0, Height - 1, Width - 1, 0);
 
             SetCursor(0, 0);
-            ReadBusy();
+            WaitForIdle();
 
             Lut();
+
+            partialMode = false;
+        }
+
+        private void DisplayGray4((byte[] L, byte[] H) buffer)
+        {
+            if (partialMode)
+            {
+                InitGray4();
+            }
+
+            SendCommand(0x24);
+            SendData(buffer.L);
+
+            SendCommand(0x26);
+            SendData(buffer.H);
+
+            FlushGray4();
+        }
+
+        private void FlushGray4()
+        {
+            SendCommand(0x22); // Display Update Control
+            SendData(0xC7);
+            SendCommand(0x20); //  Activate Display Update Sequence
+            WaitForIdle();
+        }
+
+        private void Lut()
+        {
+            SendCommand(0x32);
+            SendData(LUT_DATA_4Gray.AsSpan(0, 105));
+
+            SendCommand(0x03); //VGH
+            SendData(LUT_DATA_4Gray[105]);
+
+            SendCommand(0x04); //
+            SendData(LUT_DATA_4Gray[106], LUT_DATA_4Gray[107], LUT_DATA_4Gray[108]); // VSH1 VSH2 VSL
+
+            SendCommand(0x2C); //VCOM Voltage
+            SendData(LUT_DATA_4Gray[109]); // 0x1C
+        }
+        #endregion
+
+        #region Partial
+        private bool partialMode = false;
+
+        private void InitPartial()
+        {
+            Reset();
+
+            SendCommand(0x18); // Temperature Sensor Selection 
+            SendData(0x80); // Internal temperature sensor 
+
+            SendCommand(0x3C); //BorderWavefrom
+            SendData(0x80);
+
+            SendCommand(0x01);   //      drive output control    
+            SendData((byte)((Height - 1) % 256), (byte)((Height - 1) / 256)); //  Y 
+
+            SendCommand(0x11);        //    data  entry  mode
+            SendData(0x01);           //       X-mode  x+ y-    
+
+            partialMode = true;
+        }
+
+        private void Display(byte[] buffer, int x, int y, int w, int h)
+        {
+            if (!partialMode)
+            {
+                InitPartial();
+            }
+
+            SetWindow(x, Height - y - 1, x + w - 1, Height - y - h);
+            SetCursor(x, Height - y - 1);
+
+            SendCommand(0x24);   //Write Black and White image to RAM
+            SendData(buffer);
+
+            //SendCommand(0x26);   //Write Black and White image to RAM
+            //SendData(image);
+
+            FlushPartial();
+
+            SendCommand(0x24);   //Write Black and White image to RAM
+            SendData(buffer);
+        }
+
+        private void FlushPartial()
+        {
+            SendCommand(0x22); // Display Update Control
+            SendData(0xFF);
+
+            SendCommand(0x20); //  Activate Display Update Sequence
+            WaitForIdle();
+        }
+        #endregion
+
+        #region General
+        private void SendCommand(byte command)
+        {
+            gpio.Write(dc, 0);
+            spi.WriteByte(command);
+        }
+
+        private void SendData(params byte[] data)
+        {
+            gpio.Write(dc, 1);
+            spi.Write(data);
+        }
+
+        private void SendData(Span<byte> data)
+        {
+            gpio.Write(dc, 1);
+            spi.Write(data);
+        }
+
+        private void WaitForIdle()
+        {
+            var endTime = DateTime.Now.AddSeconds(5);
+
+            while (DateTime.Now < endTime)
+            {
+                if (gpio.Read(busy) == 0)
+                {
+                    return;
+                }
+            }
+
+            throw new TimeoutException();
+        }
+
+        private void SetWindow(int startX, int startY, int endX, int endY)
+        {
+            SendCommand(0x44); // SET_RAM_X_ADDRESS_START_END_POSITION
+            SendData((byte)(startX & 0xFF), (byte)((startX >> 8) & 0x03), (byte)(endX & 0xFF), (byte)((endX >> 8) & 0x03));
+
+
+            SendCommand(0x45); // SET_RAM_Y_ADDRESS_START_END_POSITION
+            SendData((byte)(startY & 0xFF), (byte)((startY >> 8) & 0x03), (byte)(endY & 0xFF), (byte)((endY >> 8) & 0x03));
+        }
+
+        private void SetCursor(int x, int y)
+        {
+            SendCommand(0x4E); // SET_RAM_X_ADDRESS_COUNTER
+                               // x point must be the multiple of 8 or the last 3 bits will be ignored
+            SendData((byte)(x & 0xFF), (byte)((x >> 8) & 0x03));
+
+            SendCommand(0x4F); // SET_RAM_Y_ADDRESS_COUNTER
+            SendData((byte)(y & 0xFF), (byte)((y >> 8) & 0xFF));
         }
 
         private static byte[] GetBuffer(Image<Rgb24> image)
@@ -419,69 +526,6 @@ namespace HumJ.Iot.WaveShare_EPaper
             }
 
             return (bufferL, bufferH);
-        }
-
-        private void Display(byte[] image)
-        {
-            SendCommand(0x24);
-            SendData(image);
-
-            SendCommand(0x26);
-            SendData(image);
-
-            TurnOnDisplay();
-        }
-
-        private void DisplayFast(byte[] image)
-        {
-            SendCommand(0x24);
-            SendData(image);
-
-            SendCommand(0x26);
-            SendData(image);
-
-            TurnOnDisplay_Fast();
-        }
-
-        private void DisplayPartial(byte[] image, int x, int y, int w, int h)
-        {
-            Reset();
-
-            SendCommand(0x18); // Temperature Sensor Selection 
-            SendData(0x80); // Internal temperature sensor 
-
-            SendCommand(0x3C); //BorderWavefrom
-            SendData(0x80);
-
-            SendCommand(0x01);   //      drive output control    
-            SendData((byte)((Height - 1) % 256), (byte)((Height - 1) / 256)); //  Y 
-
-            SendCommand(0x11);        //    data  entry  mode
-            SendData(0x01);           //       X-mode  x+ y-    
-
-            SetWindow(x, Height - y - 1, x + w - 1, Height - y - h);
-            SetCursor(x, Height - y - 1);
-
-            SendCommand(0x24);   //Write Black and White image to RAM
-            SendData(image);
-
-            //SendCommand(0x26);   //Write Black and White image to RAM
-            //SendData(image);
-
-            TurnOnDisplay_Part();
-
-            SendCommand(0x24);   //Write Black and White image to RAM
-            SendData(image);
-        }
-
-        private void DisplayGray4((byte[] L, byte[] H) buffer)
-        {
-            SendCommand(0x26);
-            SendData(buffer.H);
-            SendCommand(0x24);
-            SendData(buffer.L);
-
-            TurnOnDisplay_4GRAY();
         }
         #endregion
     }
