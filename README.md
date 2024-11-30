@@ -1,10 +1,6 @@
-微雪墨水屏模块驱动
+微雪、佳显墨水屏模块驱动
 
-**不同厂家的驱动板严禁混用！！！**
-
-**不同厂家的驱动板严禁混用！！！**
-
-**不同厂家的驱动板严禁混用！！！**
+# `不同厂家的驱动板严禁混用！！！`
 
 # 已支持的屏幕型号
 
@@ -31,6 +27,10 @@
 [GDEY073D46](https://www.good-display.cn/blank7.html?productId=438)
 
 ## 13.3 英寸，1200x1600 分辨率，E Ink Spectra 6
+
+相较原厂代码，改用硬件 SPI 接口，大幅提高数据传输速度。
+
+如果用于 [EPD13IN3HAT+E](https://www.waveshare.net/shop/13.3inch-e-Paper-HAT-Plus-E.htm)，可以使用 [SoftwareSpi](https://github.com/dotnet/iot/tree/main/src/devices/SoftwareSpi) 回退到软件 SPI。
 
 [EPD13IN3E](https://www.waveshare.net/shop/13.3inch-e-Paper-E.htm)
 
