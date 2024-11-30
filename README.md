@@ -29,3 +29,9 @@
 [EPD7IN3F](https://www.waveshare.net/shop/7.3inch-e-Paper-F.htm)
 
 [GDEY073D46](https://www.good-display.cn/blank7.html?productId=438)
+
+## 13.3 英寸，1200x1600 分辨率，E Ink Spectra 6
+
+[EPD13IN3E](https://www.waveshare.net/shop/13.3inch-e-Paper-E.htm)
+
+[GDEP133C02](https://www.good-display.cn/product/503.html)（未实测）
