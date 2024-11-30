@@ -9,12 +9,12 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
     {
         public int Width { get; } = 800;
         public int Height { get; } = 480;
-        public Color[] Palette => PaletteCommand.Keys.Select(v => Color.FromRgb((byte)(v >> 16), (byte)(v >> 8), (byte)v)).ToArray();
+        public abstract Color[] Palette { get; }
+        public abstract Dictionary<Color, byte> PaletteCommand { get; }
 
         public int BytesPerPacket { get; set; } = 4096;
         public Span<byte> Buffer => buffer;
 
-        public readonly Dictionary<int, byte> PaletteCommand = [];
 
         private SpiDevice spi;
         private GpioController gpio;
@@ -39,9 +39,8 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
 
         public void Dispose()
         {
-            gpio.ClosePin(dc);
-            gpio.ClosePin(reset);
-            gpio.ClosePin(busy);
+            Reset();
+            Sleep();
 
             spi = null!;
             gpio = null!;
@@ -163,7 +162,7 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
         {
             var pixel = color.ToPixel<Rgb24>();
 
-            var data = PaletteCommand[((pixel.R << 16) | (pixel.G << 8) | (pixel.B << 0))];
+            var data = PaletteCommand[pixel];
             buffer.AsSpan().Fill((byte)((data << 4) | data));
         }
 
@@ -180,10 +179,10 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
                     for (var x = 0; x < Width; x += 2)
                     {
                         pixel = source[x, y];
-                        data_H = PaletteCommand[pixel.R << 16 | pixel.G << 8 | pixel.B];
+                        data_H = PaletteCommand[pixel];
 
                         pixel = source[x + 1, y];
-                        data_L = PaletteCommand[pixel.R << 16 | pixel.G << 8 | pixel.B];
+                        data_L = PaletteCommand[pixel];
 
                         data = (byte)((data_H << 4) | data_L);
                         buffer[index++] = data;

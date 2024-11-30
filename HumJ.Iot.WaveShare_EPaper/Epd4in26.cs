@@ -126,9 +126,8 @@ namespace HumJ.Iot.WaveShare_EPaper
 
         public void Dispose()
         {
-            gpio.ClosePin(dc);
-            gpio.ClosePin(reset);
-            gpio.ClosePin(busy);
+            Reset();
+            Sleep();
 
             gpio.Dispose();
             spi.Dispose();
