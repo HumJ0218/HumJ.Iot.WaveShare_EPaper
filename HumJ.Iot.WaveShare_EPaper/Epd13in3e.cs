@@ -22,28 +22,31 @@ namespace HumJ.Iot.WaveShare_EPaper
             [Color.FromRgb(0x2D, 0x67, 0x2A)] = 6, // green
         };
 
-        private readonly int csm = 22;
-        private readonly int css = 27;
-        private readonly int rst = 17;
-        private readonly int busy = 24;
+        private readonly int dc;
+        private readonly int rst;
+        private readonly int busy;
+        private readonly int csm;
+        private readonly int css;
 
         private SpiDevice spi;
         private GpioController gpio;
 
-        public Epd13in3e(SpiDevice spi, GpioController gpio, int rst = 17, int busy = 24, int csm = 22, int css = 27)
+        public Epd13in3e(SpiDevice spi, GpioController gpio, int dc, int rst, int busy, int csm, int css)
         {
             this.spi = spi;
             this.gpio = gpio;
 
+            this.dc = dc;
             this.rst = rst;
             this.busy = busy;
             this.csm = csm;
             this.css = css;
 
-            gpio.OpenPin(this.csm, PinMode.Output, 1);
-            gpio.OpenPin(this.css, PinMode.Output, 1);
+            gpio.OpenPin(this.dc, PinMode.Output, 0);
             gpio.OpenPin(this.rst, PinMode.Output, 0);
             gpio.OpenPin(this.busy, PinMode.Input);
+            gpio.OpenPin(this.csm, PinMode.Output, 1);
+            gpio.OpenPin(this.css, PinMode.Output, 1);
         }
 
         public void Initialize()
@@ -143,29 +146,32 @@ namespace HumJ.Iot.WaveShare_EPaper
             var value = PaletteCommand[color];
             value = (byte)((value << 4) | value);
 
-            var buffer = new byte[Width * Height / 2];
+            var buffer = new byte[Width * Height / 4];
             buffer.AsSpan().Fill(value);
 
-            Display(buffer);
+            Display(buffer, buffer);
         }
 
         public void Display(Image image)
         {
             if (image is Image<Rgb24> input)
             {
-                var buffer = new byte[Width * Height / 2];
+                var bufferM = new byte[Width * Height / 4]; // left half
+                var bufferS = new byte[Width * Height / 4]; // right half
 
                 for (int y = 0; y < Height; y++)
                 {
-                    for (int x = 0; x < Width; x++)
+                    for (int x = 0; x < Width / 2; x++)
                     {
-                        var color = input[x, y];
-                        var value = PaletteCommand[color];
-                        buffer[y * Width / 2 + x / 2] |= (byte)(value << (4 * (1 - x % 2)));
+                        var valueM = PaletteCommand[input[x, y]];
+                        bufferM[y * Width / 4 + x / 2] |= (byte)(valueM << (4 * (1 - x % 2)));
+
+                        var valueS = PaletteCommand[input[x + Width / 2, y]];
+                        bufferS[y * Width / 4 + x / 2] |= (byte)(valueS << (4 * (1 - x % 2)));
                     }
                 }
 
-                Display(buffer);
+                Display(bufferM, bufferS);
             }
             else
             {
@@ -286,26 +292,16 @@ namespace HumJ.Iot.WaveShare_EPaper
             CsAll(1);
         }
 
-        private void Display(Span<byte> buffer)
+        private void Display(Span<byte> bufferM, Span<byte> bufferS)
         {
-            var lineByteWidth = Width / 2;
-            var regionLineByteWidth = lineByteWidth / 2;
-            var height = Height;
-
             gpio.Write(csm, 0);
             SendData(0x10);
-            for (int i = 0; i < height; i++)
-            {
-                SendData(buffer.Slice(i * lineByteWidth, regionLineByteWidth));
-            }
+            SendData(bufferM);
             CsAll(1);
 
             gpio.Write(css, 0);
             SendData(0x10);
-            for (int i = 0; i < height; i++)
-            {
-                SendData(buffer.Slice(i * lineByteWidth + regionLineByteWidth, regionLineByteWidth));
-            }
+            SendData(bufferS);
             CsAll(1);
 
             Flush();
