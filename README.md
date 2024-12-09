@@ -14,19 +14,19 @@
 
 [GDEQ0426T82](https://www.good-display.cn/product/452.html)
 
-## 7.3 英寸，800x480 分辨率，E Ink Spectra 6
+## 7.3 英寸，800x480 分辨率，7彩色，E Ink Spectra 6
 
 [EPD7IN3E](https://www.waveshare.net/shop/7.3inch-e-Paper-E.htm)（未实测）
 
 [GDEP073E01](https://www.good-display.cn/product/520.html)
 
-## 7.3 英寸，800x480 分辨率，E Ink Gallery ACeP
+## 7.3 英寸，800x480 分辨率，7彩色，E Ink Gallery ACeP
 
 [EPD7IN3F](https://www.waveshare.net/shop/7.3inch-e-Paper-F.htm)
 
 [GDEY073D46](https://www.good-display.cn/blank7.html?productId=438)
 
-## 13.3 英寸，1200x1600 分辨率，E Ink Spectra 6
+## 13.3 英寸，1200x1600 分辨率，6彩色，E Ink Spectra 6
 
 相较原厂代码，改用硬件 SPI 接口，大幅提高数据传输速度。
 
