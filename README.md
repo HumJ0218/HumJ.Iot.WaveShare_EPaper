@@ -34,4 +34,4 @@
 
 [EPD13IN3E](https://www.waveshare.net/shop/13.3inch-e-Paper-E.htm)
 
-[GDEP133C02](https://www.good-display.cn/product/503.html)（未实测）
+[GDEP133C02](https://www.good-display.cn/product/503.html)（实测可用微雪驱动板）
