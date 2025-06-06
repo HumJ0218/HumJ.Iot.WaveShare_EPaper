@@ -30,9 +30,7 @@
 
 优化调色盘，更高的对比度与饱和度，更准确的色调。
 
-相较原厂代码，改用硬件 SPI 接口，大幅提高数据传输速度。
-
-如果用于 [EPD13IN3HAT+E](https://www.waveshare.net/shop/13.3inch-e-Paper-HAT-Plus-E.htm)，可以使用 [SoftwareSpi](https://github.com/dotnet/iot/tree/main/src/devices/SoftwareSpi) 回退到软件 SPI。
+相较原厂代码，改用硬件 SPI 接口，大幅提高数据传输速度。如果用于 [EPD13IN3HAT+E](https://www.waveshare.net/shop/13.3inch-e-Paper-HAT-Plus-E.htm)，可以使用 [SoftwareSpi](https://github.com/dotnet/iot/tree/main/src/devices/SoftwareSpi) 回退到软件 SPI。
 
 [EPD13IN3E](https://www.waveshare.net/shop/13.3inch-e-Paper-E.htm)
 
