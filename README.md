@@ -4,6 +4,14 @@
 
 # 已支持的屏幕型号
 
+## 4 英寸，400x600 分辨率，E Ink Spectra 6
+
+校准了调色盘，色彩更加丰富。
+
+[EPD4IN0E](https://www.waveshare.net/shop/4inch-e-Paper-E.htm)
+
+[GDEP040E01](https://www.good-display.cn/product/518.html)（未实测）
+
 ## 4.26 英寸，800x480 分辨率，4灰阶、快刷、局刷，SSD1677
 
 解决了原厂代码中局刷必须使用全屏缓冲数据的问题。
@@ -29,6 +37,8 @@
 ## 13.3 英寸，1200x1600 分辨率，E Ink Spectra 6
 
 相较原厂代码，改用硬件 SPI 接口，大幅提高数据传输速度。
+
+校准了调色盘，色彩更加丰富。
 
 如果用于 [EPD13IN3HAT+E](https://www.waveshare.net/shop/13.3inch-e-Paper-HAT-Plus-E.htm)，可以使用 [SoftwareSpi](https://github.com/dotnet/iot/tree/main/src/devices/SoftwareSpi) 回退到软件 SPI。
 

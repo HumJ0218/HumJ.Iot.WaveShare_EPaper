@@ -5,16 +5,16 @@ using System.Device.Spi;
 
 namespace HumJ.Iot.WaveShare_EPaper.Base
 {
-    public abstract class Epd7in3 : IEpd
+    public abstract class Epd7Color : IEpd
     {
-        public int Width { get; } = 800;
-        public int Height { get; } = 480;
-        public abstract Color[] Palette { get; }
+        public abstract int Width { get; }
+        public abstract int Height { get; }
+
+        public Color[] Palette => [.. PaletteCommand.Keys];
         public abstract Dictionary<Color, byte> PaletteCommand { get; }
 
         public int BytesPerPacket { get; set; } = 4096;
         public Span<byte> Buffer => buffer;
-
 
         private SpiDevice spi;
         private GpioController gpio;
@@ -22,10 +22,12 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
         private readonly int reset;
         private readonly int busy;
 
-        private byte[] buffer = new byte[800 * 480 / 2];
+        protected byte[] buffer;
 
-        public Epd7in3(SpiDevice spi, GpioController gpio, int dc, int reset, int busy)
+        public Epd7Color(SpiDevice spi, GpioController gpio, int dc, int reset, int busy)
         {
+            buffer = new byte[Width * Height / 2];
+
             this.spi = spi;
             this.gpio = gpio;
             this.dc = dc;
@@ -53,62 +55,25 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
         {
             Reset();
 
-            WriteCommand(Command.CMDH);
-            WriteData(0x49, 0x55, 0x20, 0x08, 0x09, 0x18);
-
-            WriteCommand(Command.PWRR);
-            WriteData(0x3F, 0x00, 0x32, 0x2A, 0x0E, 0x2A);
-
-            WriteCommand(Command.PSR);
-            WriteData(0x5F, 0x69);
-
-            WriteCommand(Command.POFS);
-            WriteData(0x00, 0x54, 0x00, 0x44);
-
-            WriteCommand(Command.BTST1);
-            WriteData(0x40, 0x1F, 0x1F, 0x2C);
-
-            WriteCommand(Command.BTST2);
-            WriteData(0x6F, 0x1F, 0x16, 0x25);
-
-            WriteCommand(Command.BTST3);
-            WriteData(0x6F, 0x1F, 0x1F, 0x22);
-
-            WriteCommand(Command.IPC);
-            WriteData(0x00, 0x04);
-
-            WriteCommand(Command.PLL);
-            WriteData(0x02);
-
-            WriteCommand(Command.TSE);
-            WriteData(0x00);
-
-            WriteCommand(Command.CDI);
-            WriteData(0x3F);
-
-            WriteCommand(Command.TCON);
-            WriteData(0x02, 0x00);
-
-            WriteCommand(Command.TRES);
-            WriteData(0x03, 0x20, 0x01, 0xE0);
-
-            WriteCommand(Command.VDCS);
-            WriteData(0x1E);
-
-            WriteCommand(Command.T_VDCS);
-            WriteData(0x01);
-
-            WriteCommand(Command.AGID);
-            WriteData(0x00);
-
-            WriteCommand(Command.PWS);
-            WriteData(0x2F);
-
-            WriteCommand(Command.CCSET);
-            WriteData(0x00);
-
-            WriteCommand(Command.TSSET);
-            WriteData(0x00);
+            WriteCommand(Command.CMDH, 0x49, 0x55, 0x20, 0x08, 0x09, 0x18);
+            WriteCommand(Command.PWRR, 0x3F, 0x00, 0x32, 0x2A, 0x0E, 0x2A);
+            WriteCommand(Command.PSR, 0x5F, 0x69);
+            WriteCommand(Command.POFS, 0x00, 0x54, 0x00, 0x44);
+            WriteCommand(Command.BTST1, 0x40, 0x1F, 0x1F, 0x2C);
+            WriteCommand(Command.BTST2, 0x6F, 0x1F, 0x16, 0x25);
+            WriteCommand(Command.BTST3, 0x6F, 0x1F, 0x1F, 0x22);
+            WriteCommand(Command.IPC, 0x00, 0x04);
+            WriteCommand(Command.PLL, 0x02);
+            WriteCommand(Command.TSE, 0x00);
+            WriteCommand(Command.CDI, 0x3F);
+            WriteCommand(Command.TCON, 0x02, 0x00);
+            WriteCommand(Command.TRES, (byte)(Width >> 8), (byte)(Width >> 0), (byte)(Height >> 8), (byte)(Height >> 0));
+            WriteCommand(Command.VDCS, 0x1E);
+            WriteCommand(Command.T_VDCS, 0x01);
+            WriteCommand(Command.AGID, 0x00);
+            WriteCommand(Command.PWS, 0x2F);
+            WriteCommand(Command.CCSET, 0x00);
+            WriteCommand(Command.TSSET, 0x00);
 
             WriteCommand(Command.PON);
             WaitForIdle();
@@ -124,8 +89,7 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
 
         public void Sleep()
         {
-            WriteCommand(Command.POF);
-            WriteData(0x00);
+            WriteCommand(Command.POF, 0x00);
             WaitForIdle();
         }
 
@@ -148,11 +112,9 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
 
         public void Flush()
         {
-            WriteCommand(Command.DTM);
-            WriteData(buffer);
+            WriteCommand(Command.DTM, buffer);
 
-            WriteCommand(Command.DRF);
-            WriteData(0x00);
+            WriteCommand(Command.DRF, 0x00);
 
             Thread.Sleep(1); // 200us at least
             WaitForIdle();
@@ -196,7 +158,7 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
             }
         }
 
-        private void WaitForIdle()
+        protected void WaitForIdle()
         {
             while (gpio.Read(busy) == 0) // 0: busy, 1: idle
             {
@@ -204,13 +166,18 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
             }
         }
 
-        private void WriteCommand(Command command)
+        protected void WriteCommand(Command command, params byte[] data)
         {
             gpio.Write(dc, 0);
             spi.WriteByte((byte)command);
+
+            if (data.Length > 0)
+            {
+                WriteData(data);
+            }
         }
 
-        private void WriteData(params byte[] data)
+        protected void WriteData(params byte[] data)
         {
             gpio.Write(dc, 1);
 
@@ -228,7 +195,7 @@ namespace HumJ.Iot.WaveShare_EPaper.Base
         /// <summary>
         /// 指令寄存器
         /// </summary>
-        private enum Command : byte
+        protected enum Command : byte
         {
             /// <summary>
             /// Panel Setting Register

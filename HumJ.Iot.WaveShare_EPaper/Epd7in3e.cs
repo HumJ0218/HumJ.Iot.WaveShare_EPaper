@@ -5,18 +5,16 @@ using System.Device.Spi;
 
 namespace HumJ.Iot.WaveShare_EPaper
 {
-    public class Epd7in3e(SpiDevice spi, GpioController gpio, int dc, int reset, int busy) : Epd7in3(spi, gpio, dc, reset, busy)
+    public class Epd7in3e(SpiDevice spi, GpioController gpio, int dc, int reset, int busy) : Epd7Color7in3(spi, gpio, dc, reset, busy)
     {
         public static SpiConnectionSettings SpiConnectionSettings => new(0, 0)
         {
             Mode = SpiMode.Mode0,
             DataBitLength = 8,
-            ClockFrequency = 10000000,
+            ClockFrequency = 10_000_000,
             DataFlow = DataFlow.MsbFirst,
             ChipSelectLineActiveState = 0,
         };
-
-        public override Color[] Palette => [.. PaletteCommand.Keys];
 
         public override Dictionary<Color, byte> PaletteCommand { get; } = new()
         {
