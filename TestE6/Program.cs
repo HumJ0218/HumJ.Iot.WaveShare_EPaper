@@ -15,7 +15,8 @@ var pwr = gpio.OpenPin(18, PinMode.Output, 1);
 epd.Initialize();
 
 Console.WriteLine("显示图像");
-var image = Image.Load<Rgb24>(args.Length > 0 ? args[0] : "test.png");
+var bytes = File.ReadAllBytes(args.Length > 0 ? args[0] : "test.png");
+var image = Image.Load<Rgb24>(bytes);
 
 image.Mutate(ctx =>
 {

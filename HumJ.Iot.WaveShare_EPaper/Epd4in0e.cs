@@ -14,6 +14,7 @@ namespace HumJ.Iot.WaveShare_EPaper
         {
             Mode = SpiMode.Mode0,
             DataBitLength = 8,
+            ClockFrequency = 10_000_000,
             DataFlow = DataFlow.MsbFirst,
             ChipSelectLineActiveState = 0,
         };
