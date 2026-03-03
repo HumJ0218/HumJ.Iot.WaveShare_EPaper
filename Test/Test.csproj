@@ -15,4 +15,10 @@
     <ProjectReference Include="..\HumJ.Iot.WaveShare_EPaper\HumJ.Iot.WaveShare_EPaper.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="test.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

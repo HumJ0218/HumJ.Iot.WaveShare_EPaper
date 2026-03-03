@@ -10,17 +10,34 @@ using System.Device.Spi;
 using Timer = System.Timers.Timer;
 
 // 初始化电子纸显示器
-var epd = new Epd4in26(SpiDevice.Create(new SpiConnectionSettings(0, 0)
+var epd = new Epd5in79(SpiDevice.Create(new SpiConnectionSettings(0, 0)
 {
-    ClockFrequency = 20_000_000,
+    ClockFrequency = 4000000,
     Mode = SpiMode.Mode0,
     DataFlow = DataFlow.MsbFirst
 }), new GpioController(), 25, 17, 24)
 {
-    Mode = DisplayMode.Normal
+    Mode = DisplayMode.Fast
 };
 epd.Initialize();
 epd.Clear(Color.White);
+
+var image=Image.Load("test.png");
+image.Mutate(ctx => {
+    ctx.Resize(epd.Width, epd.Height);
+    ctx.BinaryThreshold(0.5f);
+});
+
+epd.Display(image);
+
+epd.Sleep();
+
+
+
+
+
+
+return;
 
 var x0 = 240;
 var y0 = 240;
