@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "解决方案项", "解决�
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Epd10in85Test", "Epd10in85Test\Epd10in85Test.csproj", "{ACE81FBB-206B-4042-B483-C39D6FBAA759}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{D08D1851-B539-4C66-B167-1B61BBDBC5A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D08D1851-B539-4C66-B167-1B61BBDBC5A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D08D1851-B539-4C66-B167-1B61BBDBC5A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ACE81FBB-206B-4042-B483-C39D6FBAA759}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACE81FBB-206B-4042-B483-C39D6FBAA759}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACE81FBB-206B-4042-B483-C39D6FBAA759}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACE81FBB-206B-4042-B483-C39D6FBAA759}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
