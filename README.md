@@ -50,7 +50,7 @@
 
 [EPD10IN85](https://www.waveshare.net/shop/10.85inch-e-Paper.htm)（未实测）
 
-[GDEM1085T41](https://www.good-display.cn/product/492.html)
+[GDEM1085T41](https://www.good-display.cn/product/492.html)（配套驱动板需要使用 GPIO 模拟 3 线 SPI）
 
 ## 13.3 英寸，1200x1600 分辨率，6彩色，E Ink Spectra 6
 
