@@ -1,8 +1,5 @@
 ﻿using HumJ.Iot.WaveShare_EPaper.Base;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Drawing;
-using SixLabors.ImageSharp.Memory;
-using SixLabors.ImageSharp.PixelFormats;
 using System.Device.Gpio;
 using System.Device.Spi;
 

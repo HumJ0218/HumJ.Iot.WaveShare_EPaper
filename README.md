@@ -22,6 +22,12 @@
 
 [GDEQ0426T82](https://www.good-display.cn/product/452.html)
 
+## 5.79 英寸，792×272 分辨率，4灰阶、快刷、局刷，SSD1683
+
+[EPD5IN79](https://www.waveshare.net/shop/5.79inch-e-Paper.htm)（未实测）
+
+[GDEY0579T93](https://www.good-display.cn/product/435.html)（未实测）
+
 ## 7.09 英寸，1200x1600 分辨率，6彩色，E Ink Spectra 6
 
 [GDEB0709E01](https://www.good-display.cn/product/729.html)（店铺评论显示可用 13.3 英寸驱动代码，未实测）
@@ -37,6 +43,14 @@
 [EPD7IN3F](https://www.waveshare.net/shop/7.3inch-e-Paper-F.htm)
 
 [GDEY073D46](https://www.good-display.cn/blank7.html?productId=438)
+
+## 10.85 英寸，1360x480 分辨率，4灰阶、快刷、局刷，UC8179C
+
+快速刷新会产生残影，局部刷新暂未完全实现。
+
+[EPD10IN85](https://www.waveshare.net/shop/10.85inch-e-Paper.htm)（未实测）
+
+[GDEM1085T41](https://www.good-display.cn/product/492.html)
 
 ## 13.3 英寸，1200x1600 分辨率，6彩色，E Ink Spectra 6
 
