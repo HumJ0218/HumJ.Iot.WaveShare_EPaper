@@ -22,6 +22,10 @@
 
 [GDEQ0426T82](https://www.good-display.cn/product/452.html)
 
+## 7.09 英寸，1200x1600 分辨率，6彩色，E Ink Spectra 6
+
+[GDEB0709E01](https://www.good-display.cn/product/729.html)（店铺评论显示可用 13.3 英寸驱动代码，未实测）
+
 ## 7.3 英寸，800x480 分辨率，7彩色，E Ink Spectra 6
 
 [EPD7IN3E](https://www.waveshare.net/shop/7.3inch-e-Paper-E.htm)（未实测）
