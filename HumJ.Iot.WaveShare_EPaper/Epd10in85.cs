@@ -41,6 +41,17 @@ namespace HumJ.Iot.WaveShare_EPaper
         private readonly GpioPin? cem;
         private readonly GpioPin? ces;
 
+        private static readonly byte[] clearBlack;
+        private static readonly byte[] clearWhite;
+
+        static Epd10in85()
+        {
+            clearBlack = new byte[40800];
+            clearWhite = new byte[40800];
+
+            clearWhite.AsSpan().Fill(0xFF);
+        }
+
         public Epd10in85(SpiDevice spi_m, SpiDevice spi_s, GpioPin dc, GpioPin reset, GpioPin busy)
         {
             ArgumentNullException.ThrowIfNull(spi_m);
@@ -130,28 +141,14 @@ namespace HumJ.Iot.WaveShare_EPaper
         }
 
         public void InitializePartial()
+
         {
             IsPartial = true;
 
             Reset();
             ReadBusy();
 
-            SendCommandAll(0x4D, 0x55);
-            SendCommandAll(0xA6, 0x38);
-            SendCommandAll(0xB4, 0x5D);
-            SendCommandAll(0xB6, 0x80);
-            SendCommandAll(0xB7, 0x00);
-            SendCommandAll(0xF7, 0x02);
-            SendCommandAll(0xAE, 0xA0);
-            SendCommandAll(0xE0, 0x01);
-            SendCommandAll(0x00, 0x9F, 0x0D);
-            SendCommandAll(0x06, 0x57, 0x24, 0x28, 0x32, 0x08, 0x48);
-            SendCommandAll(0x61, 0x02, 0xA8, 0x01, 0xE0);
-            SendCommandAll(0x62, 0x00, 0x00, 0x00, 0x00);
-            SendCommandAll(0x82, 0x12);
-            SendCommandAll(0x60, 0x31);
-            SendCommandAll(0x50, 0x97);
-            SendCommandAll(0xE8, 0x01);
+            SendCommandAll(0x00, 0x1F);
             SendCommandAll(0xE0, 0x03);
             SendCommandAll(0xE5, 0x64);
             SendCommandAll(0x04);
@@ -172,26 +169,25 @@ namespace HumJ.Iot.WaveShare_EPaper
 
         public void DisplayRaw(byte[] bufferM, byte[] bufferS)
         {
-            SendCommandAll(0x10, bufferM);
-            SendCommandAll(0x13, bufferM);
-
-            SendCommandAll(0x10, bufferS);
-            SendCommandAll(0x13, bufferS);
-
+            SendCommandM(0x13, bufferM);
+            SendCommandS(0x13, bufferS);
             TurnOnDisplay();
         }
 
         public void DisplayPartialRaw(byte[] bufferM, byte[] bufferS)
         {
-            SendCommandAll(0x62, 0, 0, 0, 0);
-            SendCommandAll(0x61, (byte)((Width / 2) >> 8), (byte)(Width / 2), (byte)(Height >> 8), (byte)Height);
+            SendCommandAll(0x50, 0xA9, 0x07);
+            SendCommandAll(0x91); //This command makes the display enter partial mode
+            SendCommandAll(0x90, 0, 0, (byte)(((Width - 1) / 2) >> 8), (byte)((Width - 1) / 2), 0, 0, (byte)((Height - 1) >> 8), (byte)(Height - 1)); //resolution setting
+
+            SendCommandAll(0x13, clearBlack);
+            TurnOnDisplay();
+            SendCommandAll(0x13, clearWhite);
+            TurnOnDisplay();
 
             SendCommandM(0x13, bufferM);
             SendCommandS(0x13, bufferS);
             TurnOnDisplay();
-
-            SendCommandM(0x10, bufferM);
-            SendCommandS(0x10, bufferS);
         }
 
         public void Clear(Color color)
@@ -199,8 +195,8 @@ namespace HumJ.Iot.WaveShare_EPaper
             var buffer = new byte[Width / 2 * Height / 8];
             buffer.AsSpan().Fill((byte)(color == Color.White ? 0xFF : 0x00));
 
-            SendCommandAll(0x10, buffer);
-            SendCommandAll(0x13, buffer);
+            SendCommandAll(0x10, color == Color.White ? clearWhite: clearBlack);
+            SendCommandAll(0x13, color == Color.White ? clearWhite : clearBlack);
 
             TurnOnDisplay();
         }
@@ -305,64 +301,6 @@ namespace HumJ.Iot.WaveShare_EPaper
             else
             {
                 SpiSendCommand(spi_s!, command, data);
-            }
-        }
-
-        private void SendDataAll(params byte[] data)
-        {
-            if (gpio)
-            {
-                cem!.Write(0);
-                ces!.Write(0);
-
-                foreach (var d in data)
-                {
-                    GpioWriteByte(dcd, d);
-                }
-
-                cem!.Write(1);
-                ces!.Write(1);
-            }
-            else
-            {
-                SpiSendData(spi_m!, data);
-                SpiSendData(spi_s!, data);
-            }
-        }
-        private void SendDataM(params byte[] data)
-        {
-            if (gpio)
-            {
-                cem!.Write(0);
-
-                foreach (var d in data)
-                {
-                    GpioWriteByte(dcd, d);
-                }
-
-                cem!.Write(1);
-            }
-            else
-            {
-                SpiSendData(spi_m!, data);
-            }
-        }
-        private void SendDataS(params byte[] data)
-        {
-            if (gpio)
-            {
-                ces!.Write(0);
-
-                foreach (var d in data)
-                {
-                    GpioWriteByte(dcd, d);
-                }
-
-                ces!.Write(1);
-            }
-            else
-            {
-                SpiSendData(spi_s!, data);
             }
         }
 
